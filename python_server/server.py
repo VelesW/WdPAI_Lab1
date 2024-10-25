@@ -14,19 +14,6 @@ class SimpleRequestHandler(BaseHTTPRequestHandler):
             'last_name': 'Mucha',
             'role': 'Instructor'
         }
-        # {
-        #     'id': 2,
-        #     'first_name': 'John',
-        #     'last_name': 'Doe',
-        #     'role': 'Student'
-        # },
-        # {
-        #     'id': 3,
-        #     'first_name': 'Jane',
-        #     'last_name': 'Austen',
-        #     'role': 'Designer'
-        # }
-        # }
     ]
     
     # Helper method to generate a unique ID for new users, ensuring no ID conflicts.
@@ -44,12 +31,9 @@ class SimpleRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")  # Allowed headers.
         self.end_headers()
 
+
     # Handles GET requests, responds with the list of users in JSON format.
     def do_GET(self) -> None:
-        self.send_response(200)  # Success response.
-        self.send_header('Content-type', 'application/json')  # Content type is JSON.
-        self.send_header('Access-Control-Allow-Origin', '*')  # Allow all origins (CORS).
-        self.end_headers()
         self.wfile.write(json.dumps(self.user_list).encode())  # Sends user list as JSON response.
 
     # Handles POST requests, adds a new user to the user list.
@@ -73,18 +57,8 @@ class SimpleRequestHandler(BaseHTTPRequestHandler):
         }
         self.user_list.append(new_user)  # Append the new user to the list.
 
-        # Prepare a response confirming the POST request and the received data.
-        response: dict = {
-            "message": "User added successfully",
-            "received": received_data
-        }
+        self.wfile.write(json.dumps(self.user_list).encode())  # Sends user list as JSON response.
 
-        # Send success response with JSON data.
-        self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')  # Allow all origins (CORS).
-        self.end_headers()
-        self.wfile.write(json.dumps(self.user_list).encode())  # Send response as JSON.
 
     # Handles DELETE requests, removes a user based on the ID provided in the request.
     def do_DELETE(self) -> None:
@@ -98,12 +72,8 @@ class SimpleRequestHandler(BaseHTTPRequestHandler):
         # Filter the user list to remove the user with the given ID.
         SimpleRequestHandler.user_list = [user for user in self.user_list if "id" in user and user['id'] != user_id]
 
-        # Send success response after deletion with the updated user list.
-        self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')  # Allow all origins (CORS).
-        self.end_headers()
-        self.wfile.write(json.dumps(self.user_list).encode())  # Send updated user list as JSON.
+        self.wfile.write(json.dumps(self.user_list).encode())  # Sends user list as JSON response.
+
 
 # Function to start the HTTP server.
 def run(
