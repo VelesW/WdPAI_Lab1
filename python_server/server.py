@@ -2,6 +2,35 @@ import json
 import random
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Type
+import psycopg2
+import os
+import time
+
+DB_HOST = os.environ.get('DB_HOST', 'postgres')
+DB_PORT = int(os.environ.get('DB_PORT', 5432))
+DB_NAME = os.environ.get('DB_NAME', 'mydatabase')
+DB_USER = os.environ.get('DB_USER', 'myuser')
+DB_PASSWORD = os.environ.get('DB_PASSWORD', 'mypassword')
+
+def connect_to_db():
+    while True:
+        try:
+            conn = psycopg2.connect(
+                host=DB_HOST,
+                port=DB_PORT,
+                dbname=DB_NAME,
+                user=DB_USER,
+                password=DB_PASSWORD
+            )
+            print("Połączono z bazą danych")
+            return conn
+        except psycopg2.OperationalError:
+            print("Błąd połączenia z bazą danych, ponawianie za 5 sekund...")
+            time.sleep(5)
+
+conn = connect_to_db()
+cursor = conn.cursor()
+
 
 # Define a request handler class for handling HTTP requests like GET, POST, DELETE, and OPTIONS.
 class SimpleRequestHandler(BaseHTTPRequestHandler):
@@ -34,7 +63,30 @@ class SimpleRequestHandler(BaseHTTPRequestHandler):
 
     # Handles GET requests, responds with the list of users in JSON format.
     def do_GET(self) -> None:
-        self.wfile.write(json.dumps(self.user_list).encode())  # Sends user list as JSON response.
+        try:
+            cursor.execute("SELECT id, first_name, last_name, role FROM users;")
+            users = cursor.fetchall()  # Fetch all rows from the users table
+            self.user_list = [
+                {
+                    'id': user[0],
+                    'first_name': user[1],
+                    'last_name': user[2],
+                    'role': user[3]
+                }
+                for user in users
+            ]
+                
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")  # Allow all origins for CORS.
+            self.end_headers()
+
+            self.wfile.write(json.dumps(self.user_list).encode())  # Sends user list as JSON response.
+
+        except Exception as e:
+            self.send_response(500)
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": str(e)}).encode())
 
     # Handles POST requests, adds a new user to the user list.
     def do_POST(self) -> None:
@@ -42,23 +94,38 @@ class SimpleRequestHandler(BaseHTTPRequestHandler):
         post_data: bytes = self.rfile.read(content_length)  # Read the incoming POST data.
         received_data: dict = json.loads(post_data.decode())  # Decode the incoming JSON data.
 
-        # Collect all existing IDs to ensure the new ID is unique.
-        existing_ids = {user['id'] for user in self.user_list if 'id' in user}
-        
-        # Generate a unique ID for the new user.
-        new_id = self.generate_unique_id(existing_ids)
+        first_name = received_data.get('firstName')
+        last_name = received_data.get('lastName')
+        role = received_data.get('role')
 
-        # Create a new user entry from the received data.
-        new_user = {
-            'id': new_id,
-            'first_name': received_data['firstName'],
-            'last_name': received_data['lastName'],
-            'role': received_data['role']
-        }
-        self.user_list.append(new_user)  # Append the new user to the list.
+        try:
+            cursor.execute(
+                "INSERT INTO users (first_name, last_name, role) VALUES (%s, %s, %s);",
+                (first_name, last_name, role)
+            )
+            conn.commit()  # Commit the transaction to save the new user
 
-        self.wfile.write(json.dumps(self.user_list).encode())  # Sends user list as JSON response.
+            # Send a response with the updated list of users
+            self.send_response(201)
+            self.send_header("Access-Control-Allow-Origin", "*")  # Allow all origins for CORS.
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
 
+            # Fetch the updated list of users to return
+            cursor.execute("SELECT id, first_name, last_name, role FROM users;")
+            users = cursor.fetchall()
+            user_list = [
+                {'id': user[0], 'first_name': user[1], 'last_name': user[2], 'role': user[3]}
+                for user in users
+            ]
+
+            self.wfile.write(json.dumps(user_list).encode())
+
+        except Exception as e:
+            conn.rollback()  # Rollback in case of error
+            self.send_response(500)
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": str(e)}).encode())
 
     # Handles DELETE requests, removes a user based on the ID provided in the request.
     def do_DELETE(self) -> None:
@@ -66,14 +133,31 @@ class SimpleRequestHandler(BaseHTTPRequestHandler):
         delete_data: bytes = self.rfile.read(content_length)  # Read the incoming DELETE data.
         received_data: dict = json.loads(delete_data.decode())  # Decode the incoming JSON data.
 
-        # Extract the user ID from the received data.
         user_id = received_data.get('id')
 
-        # Filter the user list to remove the user with the given ID.
-        SimpleRequestHandler.user_list = [user for user in self.user_list if "id" in user and user['id'] != user_id]
+        try:
+            cursor.execute("DELETE FROM users WHERE id = %s;", (user_id,))
+            conn.commit()  # Commit the transaction to delete the user
 
-        self.wfile.write(json.dumps(self.user_list).encode())  # Sends user list as JSON response.
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")  # Allow all origins for CORS.
+            self.end_headers()
 
+            # Fetch the updated list of users to return
+            cursor.execute("SELECT id, first_name, last_name, role FROM users;")
+            users = cursor.fetchall()
+            user_list = [
+                {'id': user[0], 'first_name': user[1], 'last_name': user[2], 'role': user[3]}
+                for user in users
+            ]
+
+            self.wfile.write(json.dumps(user_list).encode())
+        except Exception as e:
+            conn.rollback()  # Rollback in case of error
+            self.send_response(500)
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": str(e)}).encode())
 
 # Function to start the HTTP server.
 def run(
