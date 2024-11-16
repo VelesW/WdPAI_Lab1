@@ -11,15 +11,15 @@ services:
     depends_on:
       - postgres
 
-  frontend:
-    build: ./frontend
-    command: npm start
-    volumes:
-      - ./frontend:/app
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
+  # frontend:
+  #   build: ./frontend
+  #   command: npm start
+  #   volumes:
+  #     - ./frontend:/app
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - backend
 
   ui-app:
     build: ./ui-app

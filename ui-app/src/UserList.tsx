@@ -1,36 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { User } from './models/User';
+import { UserDto } from './models/UserDto';
 
-interface User {
-    id?: number;
-    first_name: string;
-    last_name: string;
-    role: string;
-} 
 
 const UserList = () => {
+    const defaultUser: UserDto = {
+        first_name: "",
+        last_name: "",
+        role: "",
+    };
+
     const [users, setUsers] = useState<User[]>([]);
-    const [newUser, setNewUser] = useState<User | undefined>(undefined);
+    const [newUser, setNewUser] = useState<UserDto>(defaultUser);
     const [privacyAccepted, setPrivacyAccepted] = useState<boolean>(false) ;
 
     useEffect(() => {
-        axios.get('http://localhost:8000/api/users/')
+        axios.get('http://localhost:8000/api/users')
             .then(response => {
+                console.log(response)
                 setUsers(response.data);
             })
             .catch(error => console.error('Error fetching users:', error));
     }, []);
 
-    const handleAddUser = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const handleAddUser = () => {
         axios.post('http://localhost:8000/api/users/', newUser)
             .then(response => {
-                setUsers([...users, response.data]);
-                setNewUser({ first_name: '', last_name: '', role: '' });
-                setPrivacyAccepted(false);
+                setUsers([...users, response.data])
+                resetUserData()
             })
             .catch(error => console.error('Error adding user:', error));
     };
+
+    const resetUserData = () => {
+        setNewUser(defaultUser)
+        setPrivacyAccepted(false)
+    }
 
     const handleDeleteUser = (id: number) => {
         axios.delete(`http://localhost:8000/api/users/${id}/`)
@@ -42,10 +48,10 @@ const UserList = () => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setNewUser({
-            ...newUser,
-            [name]: value
-        });
+        setNewUser((prevUser) => ({
+            ...prevUser,
+            [name]: value,
+        }));
     };
 
     return (
@@ -112,15 +118,23 @@ const UserList = () => {
                             </label>
                         </div>
 
-                        <button type="submit" className="submit-button">Submit</button>
+                        <button type="submit" className="submit-button" onClick={() => handleAddUser}>Submit</button>
                     </form>
                 </section>
 
                 <section className="users-wrapper">
                     {users.map(user => (
-                        <div key={user.id}>
-                            {user.first_name} {user.last_name} - {user.role}
-                            <button onClick={() => handleDeleteUser(user.id)}>Delete</button>
+                        <div className="user-wrapper" key={user.id}>
+                            <div className='user-wrapper-infos'>
+                                <p className='user-wrapper-infos-name'>{`${user.first_name} ${user.last_name} - `}</p>
+                                <p className='user-wrapper-infos-role'>{user.role}</p> 
+                            </div> 
+                            <div
+                                className="delete-button" 
+                                onClick={() => handleDeleteUser(user.id)}>
+                                    Delete
+                            </div>
+                            
                         </div>
                     ))}
                 </section>

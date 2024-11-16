@@ -153,7 +153,7 @@ body {
 
 .user-wrapper-infos {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: var(--spacing-small);
   width: 100%;
 }
@@ -172,10 +172,10 @@ body {
 
 /* Delete Button */
 .delete-button {
-  width: 40px;
-  height: 40px;
-  background-color: var(--color-background);
+  background-color: var(--color-primary);
+  padding: 7px;
+  border-radius: 20%;
   border: none;
   cursor: pointer;
-  color: var(--color-text-tertiary);
-}
+  color: var(--color-background);
+  }
