@@ -75,17 +75,10 @@ class SimpleRequestHandler(BaseHTTPRequestHandler):
                 }
                 for user in users
             ]
-                
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Access-Control-Allow-Origin", "*")  # Allow all origins for CORS.
-            self.end_headers()
 
             self.wfile.write(json.dumps(self.user_list).encode())  # Sends user list as JSON response.
 
         except Exception as e:
-            self.send_response(500)
-            self.end_headers()
             self.wfile.write(json.dumps({"error": str(e)}).encode())
 
     # Handles POST requests, adds a new user to the user list.
@@ -105,12 +98,6 @@ class SimpleRequestHandler(BaseHTTPRequestHandler):
             )
             conn.commit()  # Commit the transaction to save the new user
 
-            # Send a response with the updated list of users
-            self.send_response(201)
-            self.send_header("Access-Control-Allow-Origin", "*")  # Allow all origins for CORS.
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-
             # Fetch the updated list of users to return
             cursor.execute("SELECT id, first_name, last_name, role FROM users;")
             users = cursor.fetchall()
@@ -123,8 +110,6 @@ class SimpleRequestHandler(BaseHTTPRequestHandler):
 
         except Exception as e:
             conn.rollback()  # Rollback in case of error
-            self.send_response(500)
-            self.end_headers()
             self.wfile.write(json.dumps({"error": str(e)}).encode())
 
     # Handles DELETE requests, removes a user based on the ID provided in the request.
@@ -134,15 +119,10 @@ class SimpleRequestHandler(BaseHTTPRequestHandler):
         received_data: dict = json.loads(delete_data.decode())  # Decode the incoming JSON data.
 
         user_id = received_data.get('id')
-
+        
         try:
             cursor.execute("DELETE FROM users WHERE id = %s;", (user_id,))
             conn.commit()  # Commit the transaction to delete the user
-
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Access-Control-Allow-Origin", "*")  # Allow all origins for CORS.
-            self.end_headers()
 
             # Fetch the updated list of users to return
             cursor.execute("SELECT id, first_name, last_name, role FROM users;")
@@ -155,8 +135,6 @@ class SimpleRequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(user_list).encode())
         except Exception as e:
             conn.rollback()  # Rollback in case of error
-            self.send_response(500)
-            self.end_headers()
             self.wfile.write(json.dumps({"error": str(e)}).encode())
 
 # Function to start the HTTP server.
