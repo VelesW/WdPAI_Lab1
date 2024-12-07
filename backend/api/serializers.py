@@ -1,7 +1,27 @@
 from rest_framework import serializers
-from .models import User
+from .models import BusinessUser, SystemUser
 
-class UserSerializer(serializers.ModelSerializer):
+
+class BusinessUserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = BusinessUser
         fields = ['id', 'first_name', 'last_name', 'role']
+
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(read_only=True)
+    class Meta:
+        model = SystemUser
+        fields = ['id','username','email','password']
+
+    def create(self, validated_data):
+        user = SystemUser.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
+        return user
+
+class SystemUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SystemUser
+        fields = ['id','email','password']
