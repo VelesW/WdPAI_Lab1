@@ -60,9 +60,25 @@ body {
   gap: var(--spacing-xlarge);
 }
 
+.form-section {
+  width: 100%;
+  min-width: 400px;
+}
+
+.switch-page-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.switch-page-text p {
+  font-size: 12px;
+  color: var(--color-text-primary);
+}
+
 /* Form Styles */
 .main-form {
-  width: 100%;
+  width: 95%;
   padding: var(--spacing-xlarge) var(--spacing-medium);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-small);
@@ -77,6 +93,12 @@ body {
   color: var(--color-text-primary);
   font-weight: var(--font-weight-bold);
   font-size: var(--font-size-large);
+}
+
+.header-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Input Styles */
