@@ -10,11 +10,7 @@ class BusinessUser(models.Model):
         return f"{self.first_name} {self.last_name} - {self.role}"
 
 class SystemUser(AbstractUser):
-    """
-    Systemowy użytkownik odpowiedzialny za logowanie i rejestrację.
-    """
     email = models.EmailField(unique=True)
-
     groups = models.ManyToManyField(
         Group,
         related_name="custom_user_set", 
@@ -25,4 +21,3 @@ class SystemUser(AbstractUser):
         related_name="custom_user_permissions_set",  
         blank=True,
     )
-

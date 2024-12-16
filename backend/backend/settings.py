@@ -38,23 +38,23 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework_simplejwt',
     'api',
+    'rest_framework_simplejwt',
     'rest_framework',
     "corsheaders",
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES' : (
-        'rest_framework_simplejwt.authentication.JWTAuthentication'
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
 
 SIMPLE_JWT = {
-   'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
-   'REFRESH_TOKEN_LIFETIME': timedelta(days=365),
-   'ROTATE_REFRESH_TOKENS': False,
-   'BLACKLIST_AFTER_ROTATION': True,
+   'ACCESS_TOKEN_LIFETIME': timedelta(minutes=20),
+   'REFRESH_TOKEN_LIFETIME': timedelta(days=20),
+   'ROTATE_REFRESH_TOKENS': False,                 
+   'BLACKLIST_AFTER_ROTATION': True,       
    'ALGORITHM': 'HS256',                          
    'SIGNING_KEY': SECRET_KEY,
    'AUTH_HEADER_TYPES': ('Bearer',),
@@ -135,7 +135,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MOEDL = 'api.SystemUser'
+AUTH_USER_MODEL = 'api.SystemUser'
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
