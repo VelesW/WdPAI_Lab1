@@ -41,8 +41,8 @@ body {
 
 /* Layout */
 .main-container {
-  width: 100vw;
-  height: 100vh;
+  width: 99vw;
+  height: 94vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -200,4 +200,74 @@ body {
   border: none;
   cursor: pointer;
   color: var(--color-background);
+  }
+
+  .error {
+    background-color: rgb(238, 115, 115);
+    border: 1px solid rgb(230, 55, 55);
+  }
+
+  .information {
+    background-color: rgb(115, 168, 238);
+    border: 1px solid rgb(33, 111, 226);
+  }
+
+  .response {
+    font-size: 12px;
+    padding: 8px;
+    border-radius: 20px;
+    width: 100%;
+    text-align: center;
+  }
+  
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+  
+  .fade-in-out {
+    animation: fadeIn 0.5s ease forwards, fadeOut 0.5s ease 3.5s forwards;
+  }
+
+  .logout-wrapper{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .logout {
+    display: flex;
+    width: 70px;
+    height: 40px;
+    color: black;
+    align-items: center;
+    justify-content: flex-end;
+    text-align: center;
+    margin-right: 10px;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid black;
+    cursor: pointer;
+  }
+
+  .logout p {
+    text-align: center;
   }

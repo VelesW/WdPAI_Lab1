@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import InputField from '../helpers/inputField';
 import SubmitButton from '../helpers/SumbitButton';
 import SwitchPageText from '../helpers/SwitchPageText';
+import { useNavigate } from 'react-router-dom';
+import Response from '../helpers/response';
 import '../../App.css'
 
 const Login = () => {
@@ -9,6 +11,8 @@ const Login = () => {
     username: '',
     password: '',
   });
+  const navigate = useNavigate()
+  const [error, setError] = useState<string | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -18,11 +22,33 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login actions
-    console.log('Login User:', userData);
-    alert('User Logged In!');
+    setError(null);
+    try {
+      const response = await fetch('http://localhost:8000/api/login/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          username: userData.username, 
+          password: userData.password,
+        }),
+      });
+
+      if (response.ok) {
+        const data: { access: string; refresh: string } = await response.json();
+        localStorage.setItem('access_token', data.access);
+        localStorage.setItem('refresh_token', data.refresh);
+        navigate('/users');
+      } else {
+        const errorData: { detail?: string } = await response.json();
+        setError(errorData.detail || 'Invalid credentials');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
   return (
@@ -60,6 +86,9 @@ const Login = () => {
                         </div>
                     </div>
                     <SwitchPageText isLoginPage={true} />
+                    {error && (
+                      <Response data={error} className="error" />
+                    )}
                     <SubmitButton
                         onClick={() => handleSubmit}
                         label="Login"

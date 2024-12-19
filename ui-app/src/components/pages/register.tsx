@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import InputField from '../helpers/inputField';
 import SubmitButton from '../helpers/SumbitButton';
-// import PrivacyAgreement from '../helpers/PrivacyAgreement';
+import PrivacyAgreement from '../helpers/PrivacyAgreement';
 import SwitchPageText from '../helpers/SwitchPageText';
+import Response from '../helpers/response';
 import '../../App.css'
 
 const Register = () => {
@@ -12,6 +13,8 @@ const Register = () => {
     password: '',
     confirmPassword: '',
   });
+  const [response, setResponse] = useState<string>("")
+  const [error, setError] = useState<string>("")
 
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
@@ -24,17 +27,38 @@ const Register = () => {
     setPrivacyAccepted(false)
   };
 
-//   const handlePrivacyChange = (accepted: boolean) => {
-//     setPrivacyAccepted(accepted);
-//   };
+  const handlePrivacyChange = (accepted: boolean) => {
+    setPrivacyAccepted(accepted);
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (userData.password === userData.confirmPassword && privacyAccepted) {
-      console.log('User data:', userData);
-      alert('User Registered!');
-    } else {
-      alert('Please check the privacy agreement and matching passwords');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setResponse("")
+
+    if(userData.password!==userData.confirmPassword){
+      setError("Passwords need to be the same!")
+      return 
+    }
+
+    try {
+      const response = await fetch('http://localhost:8000/api/register/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          username: userData.username, 
+          email: userData.email,
+          password: userData.password,
+        }),
+      });
+
+      if (response.ok) {
+        setResponse("Registered correctly! Login to proceed")
+      } else {
+        setError("Type correct data!");
+      }
+    } catch (error) {
+      console.error('Error:', error);
     }
   };
 
@@ -97,11 +121,17 @@ const Register = () => {
                             />
                         </div>
                     </div>
-                    {/* <PrivacyAgreement
+                    <PrivacyAgreement
                         privacyAccepted={privacyAccepted}
                         onPrivacyChange={handlePrivacyChange}
-                    /> */}
+                    />
                     <SwitchPageText isLoginPage={false} />
+                    {response && (
+                      <Response data={response} className="information" />
+                    )}
+                    {error && (
+                      <Response data={error} className="error" />
+                    )}
                     <SubmitButton
                         onClick={() => handleSubmit}
                         label="Register"

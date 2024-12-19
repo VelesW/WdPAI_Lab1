@@ -2,7 +2,7 @@ import React from 'react';
 import '../../App.css'
 
 interface SubmitButtonProps {
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
   label: string;
 }
 
