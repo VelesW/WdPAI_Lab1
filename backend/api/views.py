@@ -7,6 +7,8 @@ from .serializers import BusinessUserSerializer
 from .serializers import RegisterSerializer, SystemUserSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
+
 
 SystemUser = get_user_model()
 
@@ -61,3 +63,28 @@ def register(request):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def business_user_update(request, pk):
+    business_user = get_object_or_404(BusinessUser, pk=pk)
+    serializer = BusinessUserSerializer(business_user, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_concrete_business_user(request, pk):
+    business_user = get_object_or_404(BusinessUser, pk=pk)
+    serializer = BusinessUserSerializer(business_user)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_me(request):
+    user = request.user
+    serializer = SystemUserSerializer(user)
+    return Response(serializer.data)
