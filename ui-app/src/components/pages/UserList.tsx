@@ -55,7 +55,7 @@ const UserList = () => {
 
     const handleDeleteUser = (e: React.MouseEvent, id: number) => {
         e.preventDefault()
-        axios.delete(`http://localhost:8000/api/users/${id}/`, {
+        axios.delete(`http://localhost:8000/api/users/${id}/delete/`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
